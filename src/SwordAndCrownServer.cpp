@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include "session.h"
 using namespace std;
 
 #define PORT 9173
@@ -20,8 +21,6 @@ int main()
 	int conn_fd;
 
 	int len = sizeof(struct sockaddr_in);
-	int rsize;
-	char buf[MAXDATA];
 
 	if((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("socket");
@@ -43,33 +42,29 @@ int main()
 		exit(EXIT_FAILURE);
 	}
 	printf("Start Listening Port : %d...\n", PORT);
+	fflush(stdout);
 
-	if((conn_fd = accept(listen_fd, (struct sockaddr*)&caddr, &len)) < 0) {
-		perror("accept");
-		exit(EXIT_FAILURE);
+	while(1) {
+		Session* s = new Session();
+		if((conn_fd = accept(listen_fd, (struct sockaddr*)&caddr, &len)) < 0) {
+			perror("accept");
+			exit(EXIT_FAILURE);
+		}
+		printf("First accept completed.\n");
+		fflush(stdout);
+		s->SetFd(conn_fd);
+
+		if((conn_fd = accept(listen_fd, (struct sockaddr*)&caddr, &len)) < 0) {
+			perror("accept");
+			exit(EXIT_FAILURE);
+		}
+		printf("Second accept completed.\n");
+		fflush(stdout);
+		s->SetFd(conn_fd);
 	}
-
 	close(listen_fd);
 
-	do {
-		rsize = recv(conn_fd, buf, MAXDATA, 0);
-
-		if(rsize == 0) {
-			break;
-		} else if (rsize == -1) {
-			perror("recv");
-			exit(EXIT_FAILURE);
-		} else {
-			write(conn_fd, buf, rsize);
-		}
-	} while(1);
-
-	if(close(conn_fd) < 0) {
-		perror("close");
-		exit(EXIT_FAILURE);
-	}
-
-	printf("Connection closed.\n");
+	printf("Server ended.\n");
 	return 0;
 }
 
