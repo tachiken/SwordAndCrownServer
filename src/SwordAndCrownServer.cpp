@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <string>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -20,14 +21,14 @@ int main()
 	int listen_fd;
 	int conn_fd;
 
-	int len = sizeof(struct sockaddr_in);
+	socklen_t len = sizeof(struct sockaddr_in);
 
 	if((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("socket");
 		exit(EXIT_FAILURE);
 	}
 
-	bzero((char*)&saddr, sizeof(saddr));
+	memset((char*)&saddr, 0x00, sizeof(saddr));
 
 	saddr.sin_family = PF_INET;
 	saddr.sin_addr.s_addr = INADDR_ANY;
