@@ -5,15 +5,14 @@
 typedef struct {
 	int from;
 	int to;
-	char senddata[4];
 } fds_data;
 
 
 class Session {
 private:
 	int setCount;
-	pthread_t thid[2];
-	fds_data th_arg[2];
+	pthread_t thid;
+	fds_data th_arg;
 
 	void Start();
 public:
