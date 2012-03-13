@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include "session.h"
 
-Session::Session() : setCount(0)
+Session::Session(int id) : setCount(0), id(id)
 {
 	fds[0] = 0;
 	fds[1] = 0;
@@ -31,12 +31,12 @@ void Session::Start()
 	int rsize;
 	int nfds;
 
-	printf("send1(%02d,%02d,%02d,%02d)\n", buf[0], buf[1], buf[2], buf[3]);
+	printf("%03d:send1(%02d,%02d,%02d,%02d)\n", id, buf[0], buf[1], buf[2], buf[3]);
 	fflush(stdout);
 	write(fds[0], buf, sizeof(buf));
 
 	buf[1] = 1;
-	printf("send1(%02d,%02d,%02d,%02d)\n", buf[0], buf[1], buf[2], buf[3]);
+	printf("%03d:send1(%02d,%02d,%02d,%02d)\n", id, buf[0], buf[1], buf[2], buf[3]);
 	fflush(stdout);
 	write(fds[1], buf, sizeof(buf));
 
@@ -58,7 +58,7 @@ void Session::Start()
 				perror("recv");
 				break;
 			} else {
-				printf("send_to(%02d,%02d,%02d,%02d)\n", buf[0], buf[1], buf[2], buf[3]);
+				printf("%03d:send_to(%02d,%02d,%02d,%02d)\n", id, buf[0], buf[1], buf[2], buf[3]);
 				fflush(stdout);
 				write(fds[1], buf, rsize);
 			}
@@ -72,7 +72,7 @@ void Session::Start()
 				perror("recv");
 				break;
 			} else {
-				printf("send_from(%02d,%02d,%02d,%02d)\n", buf[0], buf[1], buf[2], buf[3]);
+				printf("%03d:send_from(%02d,%02d,%02d,%02d)\n", id, buf[0], buf[1], buf[2], buf[3]);
 				fflush(stdout);
 				write(fds[0], buf, rsize);
 			}

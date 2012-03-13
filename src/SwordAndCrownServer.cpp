@@ -22,6 +22,7 @@ int main()
 
 	int listen_fd;
 	int conn_fd;
+	int session_id = 1;
 
 	socklen_t len = sizeof(struct sockaddr_in);
 
@@ -48,7 +49,7 @@ int main()
 	fflush(stdout);
 
 	while(1) {
-		Session* s = new Session();
+		Session* s = new Session(session_id++);
 		if((conn_fd = accept(listen_fd, (struct sockaddr*)&caddr, &len)) < 0) {
 			perror("accept");
 			exit(EXIT_FAILURE);
@@ -77,7 +78,7 @@ void* SessionThread(void* arg)
 {
 	Session* s = (Session*)arg;
 	s->Start();
-	cout << "delete!" << endl;
+	cout << "delete session " << s->GetId() << "!" << endl;
 	delete s;
 	pthread_exit(NULL);
 	return NULL;
