@@ -30,6 +30,7 @@ void* EchoThread(void* arg)
 	fds_data data = *((fds_data*)arg);
 	char buf[4] = {4, 0, 0, 0};
 	int rsize;
+	int nfds;
 
 	printf("send1(%02d,%02d,%02d,%02d)\n", buf[0], buf[1], buf[2], buf[3]);
 	fflush(stdout);
@@ -44,10 +45,11 @@ void* EchoThread(void* arg)
 	FD_ZERO(&tempfds);
 	FD_SET(data.from, &tempfds);
 	FD_SET(data.to, &tempfds);
+	nfds = (data.to > data.from ? data.to : data.from) + 1;
 
 	while(1) {
 		memcpy(&fds, &tempfds, sizeof(fd_set));
-		select(0, &fds, NULL, NULL, NULL);
+		select(nfds, &fds, NULL, NULL, 0);
 
 		if(FD_ISSET(data.from, &fds)) {
 			rsize = recv(data.from, buf, sizeof(buf), 0);
