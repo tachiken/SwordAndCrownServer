@@ -2,25 +2,15 @@
 #define SESSION_H_
 #include <pthread.h>
 
-typedef struct {
-	int from;
-	int to;
-} fds_data;
-
-
 class Session {
 private:
-	int setCount;
-	pthread_t thid;
-	fds_data th_arg;
-
-	void Start();
-public:
 	int fds[2];
-
+	int setCount;
+public:
 	Session();
 	~Session();
 	void SetFd(int fd);
+	void Start();
 };
 
 #endif /* SESSION_H_ */

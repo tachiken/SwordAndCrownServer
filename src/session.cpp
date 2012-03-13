@@ -15,9 +15,6 @@ void Session::SetFd(int fd) {
 	if(fd <= 0) throw "illegal fd.";
 	fds[setCount] = fd;
 	setCount++;
-	if(setCount >= 2) {
-		Start();
-	}
 }
 
 Session::~Session()
@@ -26,34 +23,35 @@ Session::~Session()
 	if(fds[1] != 0) close(fds[1]);
 }
 
-void* EchoThread(void* arg)
+void Session::Start()
 {
-	fds_data data = *((fds_data*)arg);
+	if(setCount != 2) throw "not ready";
+
 	char buf[4] = {4, 0, 0, 0};
 	int rsize;
 	int nfds;
 
 	printf("send1(%02d,%02d,%02d,%02d)\n", buf[0], buf[1], buf[2], buf[3]);
 	fflush(stdout);
-	write(data.from, buf, sizeof(buf));
+	write(fds[0], buf, sizeof(buf));
 
 	buf[1] = 1;
 	printf("send1(%02d,%02d,%02d,%02d)\n", buf[0], buf[1], buf[2], buf[3]);
 	fflush(stdout);
-	write(data.to, buf, sizeof(buf));
+	write(fds[1], buf, sizeof(buf));
 
-	fd_set tempfds, fds;
+	fd_set tempfds, readfds;
 	FD_ZERO(&tempfds);
-	FD_SET(data.from, &tempfds);
-	FD_SET(data.to, &tempfds);
-	nfds = (data.to > data.from ? data.to : data.from) + 1;
+	FD_SET(fds[0], &tempfds);
+	FD_SET(fds[1], &tempfds);
+	nfds = (fds[0] > fds[1] ? fds[0] : fds[1]) + 1;
 
 	while(1) {
-		memcpy(&fds, &tempfds, sizeof(fd_set));
-		select(nfds, &fds, NULL, NULL, 0);
+		memcpy(&readfds, &tempfds, sizeof(fd_set));
+		select(nfds, &readfds, NULL, NULL, 0);
 
-		if(FD_ISSET(data.from, &fds)) {
-			rsize = recv(data.from, buf, sizeof(buf), 0);
+		if(FD_ISSET(fds[0], &readfds)) {
+			rsize = recv(fds[0], buf, sizeof(buf), 0);
 			if(0 == rsize) {
 				break;
 			} else if(-1 == rsize) {
@@ -62,12 +60,12 @@ void* EchoThread(void* arg)
 			} else {
 				printf("send_to(%02d,%02d,%02d,%02d)\n", buf[0], buf[1], buf[2], buf[3]);
 				fflush(stdout);
-				write(data.to, buf, rsize);
+				write(fds[1], buf, rsize);
 			}
 		}
 
-		if(FD_ISSET(data.to, &fds)) {
-			rsize = recv(data.to, buf, sizeof(buf), 0);
+		if(FD_ISSET(fds[1], &readfds)) {
+			rsize = recv(fds[1], buf, sizeof(buf), 0);
 			if(0 == rsize) {
 				break;
 			} else if(-1 == rsize) {
@@ -76,22 +74,12 @@ void* EchoThread(void* arg)
 			} else {
 				printf("send_from(%02d,%02d,%02d,%02d)\n", buf[0], buf[1], buf[2], buf[3]);
 				fflush(stdout);
-				write(data.from, buf, rsize);
+				write(fds[0], buf, rsize);
 			}
 		}
 	}
-	close(data.from);
-	data.from = 0;
-	close(data.to);
-	data.to = 0;
-	return 0;
-}
-
-void Session::Start()
-{
-	if(setCount != 2) throw "not ready";
-	th_arg.from = fds[0];
-	th_arg.to = fds[1];
-	pthread_create(&thid, 0, EchoThread, &th_arg);
+	close(fds[0]);
+	close(fds[1]);
+	return;
 }
 

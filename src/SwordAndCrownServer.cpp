@@ -13,6 +13,8 @@ using namespace std;
 #define PORT 9173
 #define MAXDATA 1024
 
+void* SessionThread(void* arg);
+
 int main()
 {
 	struct sockaddr_in saddr;
@@ -62,6 +64,8 @@ int main()
 		printf("Second accept completed.\n");
 		fflush(stdout);
 		s->SetFd(conn_fd);
+		pthread_t thid;
+		pthread_create(&thid, NULL, SessionThread, s);
 	}
 	close(listen_fd);
 
@@ -69,3 +73,12 @@ int main()
 	return 0;
 }
 
+void* SessionThread(void* arg)
+{
+	Session* s = (Session*)arg;
+	s->Start();
+	cout << "delete!" << endl;
+	delete s;
+	pthread_exit(NULL);
+	return NULL;
+}
