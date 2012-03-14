@@ -27,17 +27,18 @@ void Session::Start()
 {
 	if(setCount != 2) throw "not ready";
 
-	char buf[4] = {4, 0, 0, 0};
+	char buf[MSGLEN] = {4, 0, 0, 0};
+	char caption[256] = "";
 	int rsize;
 	int nfds;
 
-	printf("%03d:send1(%02d,%02d,%02d,%02d)\n", id, buf[0], buf[1], buf[2], buf[3]);
-	fflush(stdout);
+	sprintf(caption, "%03d:send_prim", id);
+	DumpMessage(caption, buf);
 	write(fds[0], buf, sizeof(buf));
 
 	buf[1] = 1;
-	printf("%03d:send1(%02d,%02d,%02d,%02d)\n", id, buf[0], buf[1], buf[2], buf[3]);
-	fflush(stdout);
+	sprintf(caption, "%03d:send_seco", id);
+	DumpMessage(caption, buf);
 	write(fds[1], buf, sizeof(buf));
 
 	fd_set tempfds, readfds;
@@ -58,8 +59,8 @@ void Session::Start()
 				perror("recv");
 				break;
 			} else {
-				printf("%03d:send_to(%02d,%02d,%02d,%02d)\n", id, buf[0], buf[1], buf[2], buf[3]);
-				fflush(stdout);
+				sprintf(caption, "%03d:send_to  ", id);
+				DumpMessage(caption, buf);
 				write(fds[1], buf, rsize);
 			}
 		}
@@ -72,8 +73,8 @@ void Session::Start()
 				perror("recv");
 				break;
 			} else {
-				printf("%03d:send_from(%02d,%02d,%02d,%02d)\n", id, buf[0], buf[1], buf[2], buf[3]);
-				fflush(stdout);
+				sprintf(caption, "%03d:send_from", id);
+				DumpMessage(caption, buf);
 				write(fds[0], buf, rsize);
 			}
 		}
@@ -81,5 +82,18 @@ void Session::Start()
 	close(fds[0]);
 	close(fds[1]);
 	return;
+}
+
+void Session::DumpMessage(const char* caption, char* data)
+{
+	printf("%s(", caption);
+	for(int i=0; i<MSGLEN; i++) {
+		printf("%03d", data[i]);
+		if(i != MSGLEN - 1) {
+			printf(",");
+		}
+	}
+	printf(")\n");
+	fflush(stdout);
 }
 

@@ -2,11 +2,14 @@
 #define SESSION_H_
 #include <pthread.h>
 
+#define MSGLEN 16
+
 class Session {
 private:
 	int fds[2];
 	int setCount;
 	int id;
+	void DumpMessage(const char* caption, char* data);
 public:
 	Session(int id);
 	~Session();
