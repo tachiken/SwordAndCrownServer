@@ -10,7 +10,7 @@ private:
 	int setCount;
 	int id;
 	void DumpMessage(const char* caption, char* data);
-	void DumpUsername(char* data);
+	void DumpUsername(int user, char* data);
 public:
 	Session(int id);
 	~Session();

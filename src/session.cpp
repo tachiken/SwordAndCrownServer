@@ -59,9 +59,9 @@ void Session::Start()
 				perror("recv");
 				break;
 			} else {
-				sprintf(caption, "%03d:send_to  ", id);
+				sprintf(caption, "%03d:send_to_1", id);
 				DumpMessage(caption, buf);
-				DumpUsername(buf);
+				DumpUsername(0, buf);
 				write(fds[1], buf, rsize);
 			}
 		}
@@ -74,9 +74,9 @@ void Session::Start()
 				perror("recv");
 				break;
 			} else {
-				sprintf(caption, "%03d:send_from", id);
+				sprintf(caption, "%03d:send_to_0", id);
 				DumpMessage(caption, buf);
-				DumpUsername(buf);
+				DumpUsername(1, buf);
 				write(fds[0], buf, rsize);
 			}
 		}
@@ -99,10 +99,10 @@ void Session::DumpMessage(const char* caption, char* data)
 	fflush(stdout);
 }
 
-void Session::DumpUsername(char* data)
+void Session::DumpUsername(int user, char* data)
 {
 	if(5 != data[0]) return;
-	printf("%03d:username=[%s].\n", id, &data[1]);
+	printf("%03d:user_%1d=[%s].\n", id, user, &data[1]);
 	fflush(stdout);
 	return;
 }
