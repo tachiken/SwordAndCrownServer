@@ -61,6 +61,7 @@ void Session::Start()
 			} else {
 				sprintf(caption, "%03d:send_to  ", id);
 				DumpMessage(caption, buf);
+				DumpUsername(buf);
 				write(fds[1], buf, rsize);
 			}
 		}
@@ -75,6 +76,7 @@ void Session::Start()
 			} else {
 				sprintf(caption, "%03d:send_from", id);
 				DumpMessage(caption, buf);
+				DumpUsername(buf);
 				write(fds[0], buf, rsize);
 			}
 		}
@@ -97,3 +99,10 @@ void Session::DumpMessage(const char* caption, char* data)
 	fflush(stdout);
 }
 
+void Session::DumpUsername(char* data)
+{
+	if(5 != data[0]) return;
+	printf("%03d:username=[%s].\n", id, &data[1]);
+	fflush(stdout);
+	return;
+}
